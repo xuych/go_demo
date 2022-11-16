@@ -7,4 +7,6 @@ type User struct {
 	Name      string `gorm:"varchar(20);not null"`
 	Telephone string `gorm:"varchar(20);not null;unique"`
 	Password  string `gorm:"size:255;not null"`
+	UserId    string // 用户唯一ID
+	RoleId    int    // 权限类型
 }

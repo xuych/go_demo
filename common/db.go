@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"go_demo/config"
 	"go_demo/model"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -11,13 +12,14 @@ import (
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
-	driverName := "mysql"
-	host := "127.0.0.1"
-	port := "3306"
-	database := "go_demo"
-	username := "root"
-	password := "1234"
-	charset := "utf8"
+	dbConfig := config.GetConfig().Database
+	driverName := dbConfig.Driver
+	host := dbConfig.Host
+	port := dbConfig.Port
+	database := dbConfig.DbName
+	username := dbConfig.User
+	password := dbConfig.Password
+	charset := dbConfig.Chartset
 	args := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=%s&parseTime=true",
 		username,
 		password,
@@ -25,7 +27,7 @@ func InitDB() *gorm.DB {
 		port,
 		database,
 		charset)
-
+	fmt.Printf("%+v\n", args)
 	db, err := gorm.Open(driverName, args)
 	if err != nil {
 		panic("failed to connect database, err:" + err.Error())
