@@ -1,4 +1,4 @@
-package common
+package util
 
 import (
 	"fmt"
@@ -11,24 +11,16 @@ import (
 
 var DB *gorm.DB
 
-func InitDB() *gorm.DB {
-	dbConfig := config.GetConfig().Database
-	driverName := dbConfig.Driver
-	host := dbConfig.Host
-	port := dbConfig.Port
-	database := dbConfig.DbName
-	username := dbConfig.User
-	password := dbConfig.Password
-	charset := dbConfig.Chartset
+func InitDB(dbConfig *config.DatabaseConfig) *gorm.DB {
 	args := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=%s&parseTime=true",
-		username,
-		password,
-		host,
-		port,
-		database,
-		charset)
+		dbConfig.User,
+		dbConfig.Password,
+		dbConfig.Host,
+		dbConfig.Port,
+		dbConfig.DbName,
+		dbConfig.Chartset)
 	fmt.Printf("%+v\n", args)
-	db, err := gorm.Open(driverName, args)
+	db, err := gorm.Open(dbConfig.Driver, args)
 	if err != nil {
 		panic("failed to connect database, err:" + err.Error())
 	}
@@ -36,7 +28,7 @@ func InitDB() *gorm.DB {
 
 	//迁移
 	db.AutoMigrate(&model.User{})
-	db.AutoMigrate(&model.App{})
+	db.AutoMigrate(&model.UserInfo{})
 
 	DB = db
 

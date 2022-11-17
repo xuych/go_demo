@@ -1,9 +1,9 @@
 package main
 
 import (
-	"go_demo/common"
 	"go_demo/config"
 	"go_demo/route"
+	"go_demo/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,8 +13,14 @@ func main() {
 	if err != nil {
 		panic("读取配置文件失败，" + err.Error())
 	}
+	// 暂时不用 logger
+	// if err := util.ZapLogInit(&config.GetConfig().LogLevel); err != nil {
+	// 	panic("读取配置文件失败，" + err.Error())
+	// }
+	// 暂时不用 redis
+	// util.InitRedisUtil(conf.RedisConfig.Addr, conf.RedisConfig.Port, conf.RedisConfig.Password)
 	//获取初始化的数据库
-	db := common.InitDB()
+	db := util.InitDB(&conf.Database)
 	//延迟关闭数据库
 	defer db.Close()
 

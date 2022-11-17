@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"go_demo/common"
 	"go_demo/model"
 	"go_demo/util"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 )
 
 func Register(c *gin.Context) {
-	db := common.GetDB()
+	db := util.GetDB()
 
 	//获取参数
 	name := c.PostForm("name")
@@ -78,7 +77,7 @@ func Register(c *gin.Context) {
 }
 func Login(c *gin.Context) {
 
-	db := common.GetDB()
+	db := util.GetDB()
 
 	//获取参数
 	//此处使用Bind()函数，可以处理不同格式的前端数据

@@ -13,6 +13,7 @@ type Config struct {
 	AppPort     string         `json:"app_port"`
 	Database    DatabaseConfig `json:"database"`
 	RedisConfig RedisConfig    `json:"redis_config"`
+	LogLevel    string         `json:"log_level"`
 }
 
 // 数据库配置
