@@ -1,11 +1,11 @@
 package util
 
 type UserQueryParam struct {
-	size int
-	page int
-	q    string
+	size    int
+	page    int
+	keyword string
 }
 
 type Test struct {
-	q string
+	keyword string
 }

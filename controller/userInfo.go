@@ -45,9 +45,13 @@ func (controller *UserController) Get(c *gin.Context) {
 
 // 分页查询
 func (controller *UserController) GetPageList(c *gin.Context) {
-	param := util.GenPagination(c)
-	// param := util.GenPagination(c)
-	list, count := dao.UserInfo.GetUserPageList(&param)
+	queryReq := model.UserListQuery{}
+	if err := c.ShouldBindQuery(&queryReq); err != nil {
+		util.WriteErrResp(c, err)
+		return
+	}
+	// query, p, s := util.GenPagination(c)
+	list, count := dao.UserInfo.GetUserPageList(queryReq.Keyword, queryReq.Size, queryReq.Page, queryReq.Id)
 	util.WriteListResp(c, list, count, nil)
 }
 

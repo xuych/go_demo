@@ -19,13 +19,24 @@ func (UserInfoDao) UpdateUserName(name string, id int) error {
 }
 
 // 分页查询用户列表
-func (UserInfoDao) GetUserPageList(Param *util.UserQueryParam) ([]model.UserInfo, int64) {
-	fmt.Printf("Param: %+v", *Param)
-	results := make([]model.UserInfo, 0)
-	var count int64
-	// util.DB.Model(&model.UserInfo{}).Count(&count)
-	// util.DB.Model(&model.UserInfo{}).Limit(size).Offset(0).Find(&results)
+func (UserInfoDao) GetUserPageList(keyword *string, size int, page int, id *int) ([]model.UserInfo, int64) {
+	var bonusApps []model.UserInfo
+	query := util.DB.Model(&model.UserInfo{})
+	fmt.Println("size: ", size)
+	if keyword != nil {
+		fmt.Println("keyword: ", keyword)
+		query = query.Where("(name like ? OR id like ?)", keyword, keyword)
+	}
+	if id != nil {
+		fmt.Println("keyword: ", keyword)
+		query = query.Where("id = ?", id)
+	}
+	query.Order("id").
+		Offset((page - 1) * size).
+		Limit(size).Find(&bonusApps)
 
-	// util.DB.Model(&model.UserInfo{}).Limit(size).Offset((page - 1) * size).Find(&results)
-	return results, count
+	var count int64
+	query.Count(&count)
+
+	return bonusApps, count
 }

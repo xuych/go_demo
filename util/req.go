@@ -6,10 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GenPagination(c *gin.Context) (param UserQueryParam) {
+func GenPagination(c *gin.Context) (keyword string, size int, page int) {
 	p, _ := strconv.Atoi(c.Query("page"))
 	s, _ := strconv.Atoi(c.Query("size"))
-	q := c.Query("q")
+	query := c.Query("keyword")
+
 	if p == 0 {
 		p = 1
 	}
@@ -19,8 +20,7 @@ func GenPagination(c *gin.Context) (param UserQueryParam) {
 	// params := UserQueryParam{
 	// 	page: p,
 	// 	size: s,
-	// 	q:    q,
+	// 	keyword:    keyword,
 	// }
-	params := UserQueryParam{s, p, q}
-	return params
+	return query, p, s
 }
