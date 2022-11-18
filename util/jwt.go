@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,19 +12,33 @@ import (
 )
 
 type MyClaims struct {
-	UserId string `json:"userId"`
-	Mobile string `json:"mobile"`
+	UserId      string `json:"userId"`
+	Mobile      string `json:"mobile"`
+	BufferTime  int64
+	ExpiresTime int64
 	jwt.StandardClaims
 }
 
+var (
+	TokenExpired     = errors.New("令牌已过期，请重新登录")
+	TokenNotValidYet = errors.New("令牌尚未激活")
+	TokenMalformed   = errors.New("令牌无效")
+	TokenInvalid     = errors.New("令牌无效:")
+)
+
 const TokenExpireDuration = time.Second * 30 // 过期时间
+const TokenBufferTime = 60 * 60 * 24 * 1
+const TokenExpiresTime = 60 * 60 * 24 * 7
 
 var Secret = []byte("secret") // 密码自行设定
+// var Secret = config.GlobalConfig.JwtConfig.JwtSecretKey // 密码自行设定
 
 func GenToken(mobile string, uid string) (string, error) {
 	c := MyClaims{
-		mobile,
 		uid,
+		mobile,
+		TokenBufferTime,
+		TokenExpiresTime,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(TokenExpireDuration).Unix(), // 过期时间
 			Issuer:    "go_demo",                                  // 签发人
@@ -41,7 +56,19 @@ func ParseToken(token string) (*MyClaims, error) {
 		return Secret, nil
 	})
 	if err != nil {
-		return nil, err
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+				return nil, TokenMalformed
+			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				// Token is expired
+				return nil, TokenExpired
+			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
+				return nil, TokenNotValidYet
+			} else {
+				return nil, TokenInvalid
+			}
+		}
+
 	}
 
 	if tokenClaims != nil {
@@ -77,7 +104,7 @@ func JwtAuthMiddleware(c *gin.Context) {
 	}
 	_, err := ParseToken(authHeader)
 	if err != nil {
-		AuthFiled.WriteJsonResp(c)
+		WriteErrResp(c, err)
 		// CommonMessage.WriteJsonResp(AuthFiled, c)
 		c.Abort()
 		return
