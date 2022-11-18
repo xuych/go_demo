@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"go_demo/model"
 	"go_demo/util"
 	"net/http"
@@ -15,7 +16,7 @@ func Register(c *gin.Context) {
 
 	//获取参数
 	name := c.PostForm("name")
-	telephone := c.PostForm("telephone")
+	mobile := c.PostForm("mobile")
 	password := c.PostForm("password")
 	userId := uuid.New().String()
 	//数据验证
@@ -26,7 +27,7 @@ func Register(c *gin.Context) {
 		})
 		return
 	}
-	if len(telephone) != 11 {
+	if len(mobile) != 11 {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"code":    422,
 			"message": "手机号必须为11位",
@@ -43,7 +44,7 @@ func Register(c *gin.Context) {
 
 	//判断手机号是否存在
 	var user model.User
-	db.Where("telephone = ?", telephone).First(&user)
+	db.Where("mobile = ?", mobile).First(&user)
 	if user.ID != 0 {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"code":    422,
@@ -62,10 +63,10 @@ func Register(c *gin.Context) {
 		return
 	}
 	newUser := model.User{
-		Name:      name,
-		Telephone: telephone,
-		Password:  string(hasedPassword),
-		UserId:    userId,
+		Name:     name,
+		Mobile:   mobile,
+		Password: string(hasedPassword),
+		UserId:   userId,
 	}
 	db.Create(&newUser)
 
@@ -83,11 +84,11 @@ func Login(c *gin.Context) {
 	//此处使用Bind()函数，可以处理不同格式的前端数据
 	var requestUser model.User
 	c.Bind(&requestUser)
-	telephone := requestUser.Telephone
+	mobile := requestUser.Mobile
 	password := requestUser.Password
 
 	//数据验证
-	if len(telephone) != 11 {
+	if len(mobile) != 11 {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"code":    422,
 			"message": "手机号必须为11位",
@@ -104,7 +105,7 @@ func Login(c *gin.Context) {
 
 	//判断手机号是否存在
 	var user model.User
-	db.Where("telephone = ?", telephone).First(&user)
+	db.Where("mobile = ?", mobile).First(&user)
 	if user.ID == 0 {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"code":    422,
@@ -121,7 +122,8 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	tokenString, _ := util.GenToken(user.Name, user.UserId)
+	tokenString, _ := util.GenToken(user.UserId, user.Mobile)
+	fmt.Print("tokenString: ", tokenString)
 	//返回结果
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,

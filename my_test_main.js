@@ -12,7 +12,7 @@
 
 // type User struct {
 // 	gorm.Model
-// 	Telephone string `gorm:"varchar(20);not null;unique"`
+// 	mobile string `gorm:"varchar(20);not null;unique"`
 // 	Password  string `gorm:"size:255;not null"`
 // }
 
@@ -30,12 +30,12 @@
 // 	r.POST("/register", func(ctx *gin.Context) {
 
 // 		//获取参数
-// 		telephone := ctx.PostForm("telephone")
+// 		mobile := ctx.PostForm("mobile")
 // 		password := ctx.PostForm("password")
 
 // 		//数据验证
 
-// 		if len(telephone) != 11 {
+// 		if len(mobile) != 11 {
 // 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 // 				"code":    422,
 // 				"message": "手机号必须为11位",
@@ -52,7 +52,7 @@
 
 // 		//判断手机号是否存在
 // 		var user User
-// 		db.Where("telephone = ?", telephone).First(&user)
+// 		db.Where("mobile = ?", mobile).First(&user)
 // 		if user.ID != 0 {
 // 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 // 				"code":    422,
@@ -71,7 +71,7 @@
 // 			return
 // 		}
 // 		newUser := User{
-// 			Telephone: telephone,
+// 			mobile: mobile,
 // 			Password:  string(hasedPassword),
 // 		}
 // 		db.Create(&newUser)
@@ -87,11 +87,11 @@
 // 	r.POST("/login", func(ctx *gin.Context) {
 
 // 		//获取参数
-// 		telephone := ctx.PostForm("telephone")
+// 		mobile := ctx.PostForm("mobile")
 // 		password := ctx.PostForm("password")
 
 // 		//数据验证
-// 		if len(telephone) != 11 {
+// 		if len(mobile) != 11 {
 // 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 // 				"code":    422,
 // 				"message": "手机号必须为11位",
@@ -108,7 +108,7 @@
 
 // 		//判断手机号是否存在
 // 		var user User
-// 		db.Where("telephone = ?", telephone).First(&user)
+// 		db.Where("mobile = ?", mobile).First(&user)
 // 		if user.ID == 0 {
 // 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 // 				"code":    422,

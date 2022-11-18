@@ -2,6 +2,7 @@ package route
 
 import (
 	"go_demo/controller"
+	"go_demo/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,6 +16,7 @@ func CollectRoutes(r *gin.Engine) *gin.Engine {
 	}
 	UserController := controller.UserController{}
 	groupUser := r.Group("/api/user")
+	groupUser.Use(util.JwtAuthMiddleware)
 	{
 		groupUser.GET("", UserController.GetPageList)
 		groupUser.POST("/add", UserController.Add)

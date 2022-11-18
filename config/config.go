@@ -6,6 +6,16 @@ import (
 	"os"
 )
 
+var (
+	GlobalConfig AppConfig
+)
+
+type AppConfig struct {
+	Config         Config
+	DatabaseConfig DatabaseConfig
+	RedisConfig    RedisConfig
+	JwtConfig      JwtConfig
+}
 type Config struct {
 	AppName     string         `json:"app_name"`
 	AppModel    string         `json:"app_model"`
@@ -14,6 +24,7 @@ type Config struct {
 	Database    DatabaseConfig `json:"database"`
 	RedisConfig RedisConfig    `json:"redis_config"`
 	LogLevel    string         `json:"log_level"`
+	JwtConfig   JwtConfig      `json:"Jwt_config"`
 }
 
 // 数据库配置
@@ -34,6 +45,10 @@ type RedisConfig struct {
 	Port     int    `json:"port"`
 	Password string `json:"password"`
 	Db       int    `json:"db"`
+}
+type JwtConfig struct {
+	JwtSecretKey *string
+	PassSalt     *string
 }
 
 // 获取配置，外部使用"config.GetConfig()"调用
