@@ -24,7 +24,7 @@ func (controller *UserController) Add(c *gin.Context) {
 	}
 	dao.UserInfo.Add(&user)
 
-	c.JSON(http.StatusOK, gin.H{"user": user})
+	util.WriteSuccessResp(c, "新增成功")
 }
 
 // 查询用户
@@ -37,10 +37,7 @@ func (controller *UserController) Get(c *gin.Context) {
 		util.WriteErrResp(c, err)
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"user": &user,
-	})
+	util.WriteDataResp(c, user, nil)
 }
 
 // 分页查询

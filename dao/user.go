@@ -23,15 +23,20 @@ func (UserInfoDao) GetUserPageList(keyword *string, size int, page int, id *int)
 	var bonusApps []model.UserInfo
 	query := util.DB.Model(&model.UserInfo{})
 	fmt.Println("size: ", size)
-	if keyword != nil {
-		fmt.Println("keyword: ", keyword)
+
+	if size == 0 {
+		size = 10
+	}
+	if page == 0 {
+		page = 10
+	}
+	if keyword != nil && *keyword != "" {
 		query = query.Where("(name like ? OR id like ?)", keyword, keyword)
 	}
 	if id != nil {
-		fmt.Println("keyword: ", keyword)
 		query = query.Where("id = ?", id)
 	}
-	query.Order("id").
+	query.Order("created_at").
 		Offset((page - 1) * size).
 		Limit(size).Find(&bonusApps)
 

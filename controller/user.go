@@ -21,24 +21,15 @@ func Register(c *gin.Context) {
 	userId := uuid.New().String()
 	//数据验证
 	if len(name) == 0 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    422,
-			"message": "用户名不能为空",
-		})
+		util.WriteCustomResp(c, http.StatusUnprocessableEntity, "用户名不能为空")
 		return
 	}
 	if len(mobile) != 11 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    422,
-			"message": "手机号必须为11位",
-		})
+		util.WriteCustomResp(c, http.StatusUnprocessableEntity, "手机号必须为11位")
 		return
 	}
 	if len(password) < 6 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    422,
-			"message": "密码不能少于6位",
-		})
+		util.WriteCustomResp(c, http.StatusUnprocessableEntity, "密码不能少于6位")
 		return
 	}
 
@@ -46,20 +37,14 @@ func Register(c *gin.Context) {
 	var user model.User
 	db.Where("mobile = ?", mobile).First(&user)
 	if user.ID != 0 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    422,
-			"message": "用户已存在",
-		})
+		util.WriteCustomResp(c, http.StatusUnprocessableEntity, "用户已存在")
 		return
 	}
 
 	//创建用户
 	hasedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    500,
-			"message": "密码加密错误",
-		})
+		util.WriteCustomResp(c, http.StatusInternalServerError, "密码加密错误")
 		return
 	}
 	newUser := model.User{
@@ -71,70 +56,67 @@ func Register(c *gin.Context) {
 	db.Create(&newUser)
 
 	//返回结果
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"message": "注册成功",
-	})
+	util.WriteSuccessResp(c, "注册成功")
 }
+
+type LoginParam struct {
+	Mobile    string `json:"mobile"`    // 用户名
+	Password  string `json:"password"`  // 密码
+	Captcha   string `json:"captcha"`   // 验证码
+	CaptchaId string `json:"captchaId"` // 验证码ID
+}
+
 func Login(c *gin.Context) {
 
 	db := util.GetDB()
 
 	//获取参数
 	//此处使用Bind()函数，可以处理不同格式的前端数据
-	var requestUser model.User
-	c.Bind(&requestUser)
-	mobile := requestUser.Mobile
-	password := requestUser.Password
-
+	var requestUser LoginParam
+	err := c.ShouldBindJSON(&requestUser)
+	if err != nil {
+		util.WriteCustomResp(c, http.StatusBadRequest, "缺少必要参数")
+		return
+	}
+	err = util.Verify(requestUser, util.LoginVerify)
+	if err != nil {
+		util.WriteCustomResp(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if !(store.Verify(requestUser.CaptchaId, requestUser.Captcha, true)) {
+		util.WriteCustomResp(c, http.StatusBadRequest, "验证码错误")
+		return
+	}
 	//数据验证
-	if len(mobile) != 11 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    422,
-			"message": "手机号必须为11位",
-		})
-		return
-	}
-	if len(password) < 6 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    422,
-			"message": "密码不能少于6位",
-		})
-		return
-	}
+	// if len(mobile) != 11 {
+	// 	util.WriteCustomResp(c, http.StatusUnprocessableEntity, "手机号必须为11位")
+	// 	return
+	// }
+	// if len(password) < 6 {
+	// 	util.WriteCustomResp(c, http.StatusUnprocessableEntity, "密码不能少于6位")
+	// 	return
+	// }
 
 	//判断手机号是否存在
 	var user model.User
-	db.Where("mobile = ?", mobile).First(&user)
+	db.Where("mobile = ?", requestUser.Mobile).First(&user)
 	if user.ID == 0 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    422,
-			"message": "用户不存在",
-		})
+		util.WriteCustomResp(c, http.StatusUnprocessableEntity, "用户不存在")
 		return
 	}
 
 	//判断密码是否正确
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code":    422,
-			"message": "密码错误",
-		})
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(requestUser.Password)); err != nil {
+		util.WriteCustomResp(c, http.StatusUnprocessableEntity, "密码错误")
 		return
 	}
 	tokenString, _ := util.GenToken(user.UserId, user.Mobile)
 	fmt.Print("tokenString: ", tokenString)
 	//返回结果
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"message": "登录成功",
-		"token":   tokenString,
-	})
+	c.Header("authorization", tokenString)
+	util.WriteSuccessResp(c, "登录成功")
 }
-func List(c *gin.Context) {
-	util.JwtAuthMiddleware(c)
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"message": "成功",
-	})
+func LogOut(c *gin.Context) {
+	c.Header("authorization", "")
+	util.WriteSuccessResp(c, "登出成功")
 }

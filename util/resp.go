@@ -29,6 +29,16 @@ func WriteListResp(c *gin.Context, list interface{}, count int64, msg *string) {
 		"total": count,
 	})
 }
+func WriteDataResp(c *gin.Context, data interface{}, msg *string) {
+	message := "获取详情成功"
+	if msg != nil {
+		message = *msg
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg":  message,
+		"data": data,
+	})
+}
 
 func WriteErrResp(c *gin.Context, err error) {
 	fmt.Printf("%+v\n", err)
@@ -42,6 +52,19 @@ func WriteCustomErrResp(c *gin.Context, httpCode int, err error) {
 	c.JSON(httpCode, gin.H{
 		"msg": err.Error(),
 	})
+}
+
+func WriteCustomResp(c *gin.Context, httpCode int, msg string) {
+	c.JSON(httpCode, gin.H{
+		"msg": msg,
+	})
+}
+
+func WriteSuccessResp(c *gin.Context, msg string) {
+	c.JSON(http.StatusOK, gin.H{
+		"msg": msg,
+	})
+
 }
 
 var (
